@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://opc3benefits.github.io/sitemap.xml

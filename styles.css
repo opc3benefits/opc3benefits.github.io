@@ -1,0 +1,31 @@
+
+:root{--bg:#0f1220;--fg:#e9eefc;--muted:#a8b2d1;--brand:#6aa5ff;--brand2:#9fe870}
+*{box-sizing:border-box}html,body{margin:0;padding:0}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg);line-height:1.6}
+a{color:var(--brand)}a.link{text-underline-offset:3px}
+.container{max-width:980px;margin:0 auto;padding:24px}
+.site-header{position:sticky;top:0;background:#0d1020cc;backdrop-filter:saturate(140%) blur(6px);border-bottom:1px solid #1f2540}
+.site-header h1{margin:0;font-size:1.2rem}
+nav a{margin-right:14px;color:var(--muted);text-decoration:none}
+nav a:hover{color:var(--fg)}
+.hero{padding:56px 0;border-bottom:1px solid #1f2540;background:linear-gradient(180deg,#0f1220 0,#101532 100%)}
+.hero h2{font-size:2rem;margin:.2rem 0 1rem}
+.section{padding:40px 0;border-top:1px solid #1f2540}
+.section.alt{background:#0e1430}
+.checks{list-style:none;padding-left:0}
+.checks li{padding-left:28px;position:relative;margin:.3rem 0}
+.checks li::before{content:"✓";position:absolute;left:0;top:0;color:var(--brand2)}
+.cta{display:inline-block;background:var(--brand);color:#061028;padding:12px 16px;border-radius:10px;text-decoration:none;font-weight:700}
+.cta:hover{filter:brightness(1.1)}
+.coupon{display:inline-block;background:var(--brand2);color:#061028;padding:6px 10px;border-radius:999px;margin-left:10px;font-weight:700}
+.note{color:var(--muted);font-size:.95rem}
+.disclaimer{color:#c9a97a;font-size:.9rem}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.card-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.card{background:#0f1333;border:1px solid #1f2540;border-radius:14px;padding:16px}
+.card h4{margin:0 0 6px}
+.card p{margin:.2rem 0 .6rem}
+.site-footer{border-top:1px solid #1f2540;background:#0d1022;color:var(--muted)}
+@media (max-width:1000px){.card-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.grid-2{grid-template-columns:1fr}.hero h2{font-size:1.5rem}.card-grid{grid-template-columns:1fr}}
+.badge{background:#eef3ff;color:#334;padding:2px 8px;border-radius:999px;font-size:.8rem}

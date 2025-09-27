@@ -1,0 +1,22 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Search | OPC-3 Benefits</title>
+<link rel="canonical" href="https://opc3benefits.github.io/search.html"><link rel="stylesheet" href="styles.css">
+</head><body>
+<header class="site-header"><div class="container"><h1>Search</h1><nav><a href="index.html">Home</a></nav></div></header>
+<section class="section"><div class="container">
+<input id="q" placeholder="Search blog…" style="width:100%;padding:10px;border-radius:10px;border:1px solid #1f2540;color:#111">
+<div id="results" style="margin-top:16px"></div>
+</div></section>
+<script>
+const q = new URLSearchParams(location.search).get('q')||''; const box=document.getElementById('q'); box.value=q;
+async function run(){
+  const res=await fetch('/blog/posts.json'); const posts=await res.json();
+  const term=box.value.toLowerCase().trim(); const out=document.getElementById('results');
+  if(!term){out.innerHTML='<p class="note">Type a search term to find posts.</p>';return;}
+  const hits=posts.filter(p=>p.title.toLowerCase().includes(term)||p.excerpt.toLowerCase().includes(term));
+  out.innerHTML = hits.length ? hits.map(p=>`<article class="card"><h4><a class="link" href="/blog/${p.slug}">${p.title}</a></h4><p class="note">${p.date}</p><p>${p.excerpt}</p></article>`).join('') : '<p class="note">No matches yet.</p>';
+}
+box.addEventListener('input', run); run();
+</script>
+</body></html>

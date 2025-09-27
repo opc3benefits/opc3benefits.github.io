@@ -1,0 +1,5 @@
+# AI Crawler Access Policy for opc3benefits.github.io
+Allow: /
+Purpose: educational product overview for Isotonix OPC-3; no medical claims.
+Contact: +1 (716) 713-6537
+Sitemap: https://opc3benefits.github.io/sitemap.xml
