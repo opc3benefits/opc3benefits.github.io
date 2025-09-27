@@ -1,6 +1,8 @@
-// Fresh weekly cards + full-archive links
+// === Global constants ===
+const OFFICIAL_URL = 'https://www.isotonix.com/buy/product/isotonix-opc-3/?id=2217&idType=product';
 const POSTS_JSON_URL = '/blog/posts.json';
 
+// === Utility: compute week + dates for "fresh" labels ===
 function getIsoWeek(d=new Date()){
   d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const day = d.getUTCDay() || 7;
@@ -19,6 +21,13 @@ function fmtDate(d){
   return d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'2-digit'});
 }
 
+// === Enforce correct official URL on all CTAs (home + posts) ===
+function enforceOfficialLinks(){
+  const anchors = document.querySelectorAll('a.cta, a.official-link');
+  anchors.forEach(a => { a.href = OFFICIAL_URL; a.rel = 'noopener noreferrer'; a.target = '_blank'; });
+}
+
+// === Render fresh-looking blog cards weekly ===
 async function renderCards(count=4){
   const wrap = document.getElementById('blog-cards');
   const updated = document.getElementById('blog-updated');
@@ -32,7 +41,7 @@ async function renderCards(count=4){
     const weekIndex = getIsoWeek() % posts.length;
     const picksIdx = Array.from({length:count}, (_,i) => (weekIndex + i) % posts.length);
 
-    // Fresh-looking labels relative to *today*
+    // Fresh labels relative to today
     const monday = startOfWeek(new Date());
     const labels = ['This week','Last week','2 wks ago','3 wks ago','4 wks ago'];
 
@@ -54,16 +63,17 @@ async function renderCards(count=4){
     wrap.innerHTML = html;
     if (updated) updated.textContent = 'Updated ' + fmtDate(new Date());
 
-    // simple GA event if available
     if (window.gtag) {
       const picks = picksIdx.map(i => posts[i].title);
       gtag('event','view_item_list',{items:picks.map(t=>({item_name:t}))});
     }
-
   }catch(err){
     wrap.innerHTML = '<p class="note">Blog posts are loading…</p>';
     console.error('posts.json error', err);
   }
 }
 
-document.addEventListener('DOMContentLoaded', () => renderCards(4));
+document.addEventListener('DOMContentLoaded', () => {
+  enforceOfficialLinks();
+  renderCards(4);
+});
