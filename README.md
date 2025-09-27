@@ -4,7 +4,8 @@ Static, compliance-friendly landing site for Isotonix OPC-3® with weekly blog r
 
 - Live URL: https://opc3benefits.github.io/
 - GA4: G-MCBWTME2RW
-- CTA: https://www.isotonix.com/buy/product/isotonix-opc-3/?id=2217&idType=product?utm_source=opc3site&utm_medium=cta&utm_campaign=opc3
+- CTA: https://www.isotonix.com/buy/product/isotonix-opc-3/?id=2217&idType=product
+
 - Phone: +1 (716) 713-6537
 
 ## How the weekly rotation works

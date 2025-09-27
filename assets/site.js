@@ -1,5 +1,6 @@
 // === Global constants ===
-const OFFICIAL_URL = 'https://www.isotonix.com/buy/product/isotonix-opc-3/?id=2217&idType=product';
+const OFFICIAL_URL = 'https://www.isotonix.com/buy/product/isotonix-opc-3/?id=2217&idType=product
+';
 const POSTS_JSON_URL = '/blog/posts.json';
 
 // === Utility: compute week + dates for "fresh" labels ===
