@@ -24,7 +24,7 @@ body{
   overflow-x:hidden;
 }
 
-/* Fluid container auto-fits any screen but keeps text readable */
+/* Fluid container that adapts to any screen but keeps lines readable */
 .container{
   width: clamp(320px, 92vw, 1440px);
   margin: 0 auto;
