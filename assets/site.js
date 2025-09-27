@@ -1,76 +1,103 @@
-// === Global constants ===
-const OFFICIAL_URL = 'https://www.isotonix.com/buy/product/isotonix-opc-3/?id=2217&idType=product
-';
+// ===== Global constants =====
+const OFFICIAL_URL = 'https://www.isotonix.com/buy/product/isotonix-opc-3/?id=2217&idType=product';
 const POSTS_JSON_URL = '/blog/posts.json';
 
-// === Utility: compute week + dates for "fresh" labels ===
-function getIsoWeek(d=new Date()){
+// ===== Helpers: week math + formatting =====
+function getIsoWeek(d = new Date()){
   d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
   const day = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - day);
   const yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
   return Math.ceil((((d - yearStart) / 86400000) + 1)/7);
 }
-function startOfWeek(date=new Date()){ // Monday
+function startOfWeek(date = new Date()){ // Monday
   const d = new Date(date);
-  const day = (d.getDay() + 6) % 7; // 0 = Monday
+  const day = (d.getDay() + 6) % 7;
   d.setDate(d.getDate() - day);
   d.setHours(0,0,0,0);
   return d;
 }
 function fmtDate(d){
-  return d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'2-digit'});
+  return d.toLocaleDateString(undefined, {year:'numeric', month:'short', day:'2-digit'});
 }
 
-// === Enforce correct official URL on all CTAs (home + posts) ===
+// ===== Enforce the exact official URL on all CTAs =====
 function enforceOfficialLinks(){
-  const anchors = document.querySelectorAll('a.cta, a.official-link');
-  anchors.forEach(a => { a.href = OFFICIAL_URL; a.rel = 'noopener noreferrer'; a.target = '_blank'; });
+  document.querySelectorAll('a.cta, a.official-link').forEach(a => {
+    a.href = OFFICIAL_URL;
+    a.rel = 'noopener noreferrer';
+    a.target = '_blank';
+  });
 }
 
-// === Render fresh-looking blog cards weekly ===
+// ===== Try to load posts.json; fall back to scanning week-XX pages =====
+async function loadPosts(){
+  // Preferred: JSON manifest if present
+  try{
+    const r = await fetch(POSTS_JSON_URL, { cache: 'no-store' });
+    if (r.ok) {
+      const arr = await r.json();
+      if (Array.isArray(arr) && arr.length) return arr;
+    }
+  }catch(e){
+    console.info('posts.json not available, using fallback');
+  }
+
+  // Fallback: synthesize from existing week pages by fetching a few
+  const slugs = Array.from({length:52}, (_,i)=>`week-${String(i+1).padStart(2,'0')}.html`);
+  const start = getIsoWeek() % slugs.length;
+  const sample = [];
+  for(let i=0;i<8;i++) sample.push(slugs[(start+i)%slugs.length]); // fetch a handful
+
+  const metas = (await Promise.all(sample.map(s => fetchPostMeta(`/blog/${s}`)))).filter(Boolean);
+  if (metas.length) return metas;
+
+  // Last resort: generic titles
+  return slugs.map(s => ({ slug: s, title: s.replace('.html','').replace('week-','Week '), excerpt: '' }));
+}
+
+async function fetchPostMeta(path){
+  try{
+    const res = await fetch(path, { cache:'no-store' });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const html = await res.text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const title = (doc.querySelector('h1')?.textContent || doc.querySelector('title')?.textContent || path).trim();
+    const desc = (doc.querySelector('meta[name="description"]')?.getAttribute('content') || doc.querySelector('p')?.textContent || '').trim();
+    const excerpt = desc ? desc.slice(0,180).replace(/\s+\S*$/, '…') : '';
+    return { slug: path.replace(/^\/?blog\//,''), title, excerpt };
+  }catch(err){
+    console.warn('fetchPostMeta failed:', path, err);
+    return null;
+  }
+}
+
+// ===== Render 4 fresh-looking cards =====
 async function renderCards(count=4){
   const wrap = document.getElementById('blog-cards');
   const updated = document.getElementById('blog-updated');
   if(!wrap) return;
 
-  try{
-    const res = await fetch(POSTS_JSON_URL, {cache:'no-store'});
-    const posts = await res.json();
+  const posts = await loadPosts();
+  const start = getIsoWeek() % posts.length;
+  const picks = Array.from({length:count}, (_,i)=> posts[(start + i) % posts.length]);
 
-    // rotate starting point so the set changes week-to-week
-    const weekIndex = getIsoWeek() % posts.length;
-    const picksIdx = Array.from({length:count}, (_,i) => (weekIndex + i) % posts.length);
+  const monday = startOfWeek(new Date());
+  const labels = ['This week','Last week','2 wks ago','3 wks ago','4 wks ago'];
 
-    // Fresh labels relative to today
-    const monday = startOfWeek(new Date());
-    const labels = ['This week','Last week','2 wks ago','3 wks ago','4 wks ago'];
+  wrap.innerHTML = picks.map((p,i)=>`
+    <article class="card">
+      <h4><a class="link" href="/blog/${p.slug}">${p.title}</a></h4>
+      <p class="note"><time aria-label="Post timing">${labels[i] || fmtDate(new Date(monday.getTime() - i*7*86400000))}</time></p>
+      <p>${p.excerpt || ''}</p>
+      <p><a class="btn btn-secondary" href="/blog/${p.slug}">Read</a></p>
+    </article>
+  `).join('');
 
-    const html = picksIdx.map((idx,i) => {
-      const p = posts[idx];
-      const displayDate = i < labels.length
-        ? labels[i]
-        : fmtDate(new Date(monday.getTime() - i*7*86400000));
-      return `
-        <article class="card">
-          <h4><a class="link" href="/blog/${p.slug}">${p.title}</a></h4>
-          <p class="note"><time aria-label="Post timing">${displayDate}</time></p>
-          <p>${p.excerpt}</p>
-          <p><a class="btn btn-secondary" href="/blog/${p.slug}">Read</a></p>
-        </article>
-      `;
-    }).join('');
+  if (updated) updated.textContent = 'Updated ' + fmtDate(new Date());
 
-    wrap.innerHTML = html;
-    if (updated) updated.textContent = 'Updated ' + fmtDate(new Date());
-
-    if (window.gtag) {
-      const picks = picksIdx.map(i => posts[i].title);
-      gtag('event','view_item_list',{items:picks.map(t=>({item_name:t}))});
-    }
-  }catch(err){
-    wrap.innerHTML = '<p class="note">Blog posts are loading…</p>';
-    console.error('posts.json error', err);
+  if (window.gtag) {
+    gtag('event','view_item_list',{items:picks.map(x=>({item_name:x.title}))});
   }
 }
 
